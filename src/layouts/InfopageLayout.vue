@@ -13,19 +13,11 @@ import MainDrawer from 'components/MainDrawer.vue';
 export default defineComponent({
   name: 'InfoPageLayout',
   components: { MainDrawer },
-  setup() {
-    return {};
-  },
-  data() {
-    return {
-      //
-    };
-  },
   mounted() {
-    //
-  },
-  methods: {
-    //
+    const $q = useQuasar()
+    if($q.cookies.get('user_id') === null) {
+      this.$router.push('/')
+    }
   },
 });
 </script>

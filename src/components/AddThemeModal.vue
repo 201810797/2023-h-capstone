@@ -100,6 +100,10 @@
 </template>
 
 <script lang="ts">
+interface Place {
+  name: string,
+  location: string
+}
 import { defineComponent, ref } from 'vue';
 
 export default defineComponent({
@@ -108,10 +112,11 @@ export default defineComponent({
   setup() {
     const dialog = ref(false);
     const position = ref<string | any>('bottom');
-
+    const places = ref<Place[]>([])
     return {
       dialog,
       position,
+      places,
 
       open(pos: any) {
         position.value = pos;

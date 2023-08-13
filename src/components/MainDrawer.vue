@@ -138,7 +138,12 @@
           </q-item-section>
           <q-item-section> 마이페이지 </q-item-section>
         </q-item>
+        <q-separator />
+        <q-item clickable v-ripple @click="logout">
+          <q-item-section> 로그아웃 </q-item-section>
+        </q-item>
       </q-list>
+
     </q-scroll-area>
 
     <q-img
@@ -153,37 +158,40 @@
   </q-drawer>
 </template>
 
-<script lang="ts">
+<script setup lang="ts">
 import { defineComponent, ref } from 'vue';
 import { useQuasar } from 'quasar';
+const $q = useQuasar()
+const dialog = ref(false);
+const regionFilterDialog = ref(false);
+const hashtagFilterDialog = ref(false);
+const position = ref('top');
+const drawer =  ref(false);
+const tab = ref('home');
+const open = (pos: string, filter?: string) => {
+  position.value = pos;
+  if (filter === 'region') {
+    regionFilterDialog.value = true;
+  } else if (filter === 'hashtag') {
+    hashtagFilterDialog.value = true;
+  } else {
+    dialog.value = true;
+  }
+}
+</script>
+<script lang="ts">
+import {defineComponent} from 'vue';
+import {useQuasar} from 'quasar';
+
 export default defineComponent({
   name: 'MainDrawer',
-  setup() {
-    const dialog = ref(false);
-    const regionFilterDialog = ref(false);
-    const hashtagFilterDialog = ref(false);
-    const position = ref('top');
-
-    return {
-      drawer: ref(false),
-      tab: ref('home'),
-      $q: useQuasar(),
-      dialog,
-      regionFilterDialog,
-      hashtagFilterDialog,
-      position,
-
-      open(pos: string, filter?: string) {
-        position.value = pos;
-        if (filter === 'region') {
-          regionFilterDialog.value = true;
-        } else if (filter === 'hashtag') {
-          hashtagFilterDialog.value = true;
-        } else {
-          dialog.value = true;
-        }
-      },
-    };
-  },
+  methods: {
+    logout: function () {
+      this.$q.cookies.remove('user_id');
+      this.$q.cookies.remove('user_name');
+      this.$q.cookies.remove('user_picture');
+      this.$router.push('/')
+    }
+  }
 });
 </script>

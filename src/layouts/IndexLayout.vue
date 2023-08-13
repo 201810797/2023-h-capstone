@@ -4,18 +4,21 @@
   </q-layout>
 </template>
 
-<script lang="ts">
-import { defineComponent, ref } from 'vue';
+<script lang="ts" setup>
+import {defineComponent} from 'vue';
 import { useQuasar } from 'quasar';
-import MainDrawer from 'components/MainDrawer.vue';
+</script>
+<script lang="ts">
+import {defineComponent} from 'vue';
+import {useQuasar} from 'quasar';
 
 export default defineComponent({
   name: 'IndexLayout',
-
-  setup() {
-    return {
-      $q: useQuasar(),
-    };
+  mounted() {
+    const $q = useQuasar()
+    if($q.cookies.get('user_id') !== null) {
+      this.$router.push('/main')
+    }
   },
 });
 </script>

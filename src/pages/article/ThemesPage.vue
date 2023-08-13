@@ -9,7 +9,7 @@
         v-ripple
       >
         <q-item-section>
-          <q-item-label style="font-size: 20px">{{ place.name }}</q-item-label>
+          <q-item-label style="font-size: 20px">{{ place.title }}</q-item-label>
           <q-item-label style="font-size: 15px" caption lines="1">
             <span v-for="(tag, key) in place.tags" v-bind:key="key">
               {{ tag }}
@@ -39,9 +39,15 @@
 </template>
 
 <script lang="ts">
+interface Place {
+  id: number,
+  title: string,
+  tags: string,
+  image: string
+}
 import { defineComponent, ref } from 'vue';
 import { myPlaces } from 'assets/ContentModel';
-
+import axios from 'axios';
 export default defineComponent({
   name: 'ArticlePage',
   components: {},
@@ -58,39 +64,26 @@ export default defineComponent({
         height: '100vh',
         display: 'block',
       },
-      places: ref<
-        | [
-            {
-              id: number;
-              name: string;
-              tags: [];
-            }
-          ]
-        | any
-      >(),
+      places: ref<Place[]>([]),
       title: ref<string>(''),
       tag: ref<string>(''),
       tags: ref<string[]>([]),
+      user_id: ref<string>('')
     };
   },
   async mounted() {
-    this.places = [...myPlaces];
+    this.user_id = String(this.$q.cookies.get('user_id'))
+    console.log(this.user_id)
+    const res = await axios.post('https://gqdfxlv6p3.execute-api.us-east-2.amazonaws.com/default/2023-h-capstone-article-theme', {
+      user_id: this.user_id
+    })
+
+    this.places = res.data
     this.$q.loading.show();
     this.$q.loading.hide();
   },
   methods: {
-    addTag: function () {
-      if (this.tags.length == 0) {
-        return;
-      }
-      this.places.push({
-        id: 0,
-        name: this.title,
-        tags: this.tags,
-      });
-      this.tags = [];
-      this.title = '';
-    },
+    //
   },
 });
 </script>
