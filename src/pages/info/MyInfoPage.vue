@@ -6,7 +6,7 @@
           <q-btn round>
             <q-avatar>
               <img
-                src="https://i.pinimg.com/564x/73/74/53/7374537befb86bdde9a9d57f576b76cb.jpg"
+                :src="this.$q.cookies.get('user_picture')"
               />
             </q-avatar>
           </q-btn>
@@ -14,7 +14,7 @@
         <q-item-section>
           <q-item-label class="flex row justify-between" style="margin: 5px">
             <div style="display: inline-block !important">
-              <h6 style="margin: 0; padding: 0">김현중</h6>
+              <h6 style="margin: 0; padding: 0">{{this.$q.cookies.get('user_name')}}</h6>
             </div>
             <div style="display: inline-block !important">
               <q-btn color="white" text-color="black" label="친구 수 10" />
@@ -55,7 +55,7 @@
       class="my-card"
       flat
       bordered
-      v-for="(locationInfo, index) in locationInfos"
+      v-for="(locationInfo, index) in places"
       v-bind:key="index"
     >
       <q-item clickable style="padding: 0 !important">
@@ -63,11 +63,11 @@
           <q-img
             style="width: 20%"
             class="col-5"
-            :src="locationInfo.placeImage"
+            :src="locationInfo.image"
           />
           <q-card-section style="padding: 0">
             <q-card-section>
-              {{ locationInfo.post }}
+              {{ locationInfo.user_id }}
             </q-card-section>
             <q-card-section style="padding-top: 0">
               <q-avatar
@@ -76,14 +76,12 @@
                 text-color="white"
                 icon="language"
               />
-              {{ locationInfo.location }}
+              {{ locationInfo.title }}
             </q-card-section>
           </q-card-section>
           <q-separator vertical />
           <q-card-section class="col">
-            <span v-for="(tag, index) in locationInfo.tags" v-bind:key="index"
-              >#{{ tag }}</span
-            >
+            #{{locationInfo.tags}}
           </q-card-section>
         </q-card-section>
       </q-item>
@@ -91,79 +89,29 @@
     </q-card>
   </div>
 </template>
-
 <script lang="ts">
-interface LocationInfo {
-  placeImage: string;
-  post: string;
-  location: string;
-  tags: string[];
+import axios from 'axios';
+
+interface Place {
+  id: number,
+  title: string,
+  tags: string,
+  image: string
 }
 import { defineComponent, ref } from 'vue';
-
 export default defineComponent({
-  name: 'MyInfoPage',
-  components: {},
-  setup() {
-    const locationInfos = ref<LocationInfo[]>([
-      {
-        post: '내 게시글 1',
-        placeImage:
-          'https://i.pinimg.com/564x/90/fb/13/90fb1323f3d8545e0f87ae5362763ac9.jpg',
-        location: '종로구',
-        tags: [
-          '종로',
-          '언덕싫어',
-          '학식싫어',
-          '찐맛집',
-          '가성비',
-        ],
-      },
-      {
-        post: '내 게시글 2',
-        placeImage:
-          'https://i.pinimg.com/564x/57/d2/9b/57d29ba46331864473199490161727ef.jpg',
-        location: '강남구',
-        tags: [
-          '강남',
-          '강남역',
-          '사람많아',
-          '커피비싸',
-          '사진맛집',
-        ],
-      },
-      {
-        post: '내 게시글 3',
-        placeImage:
-          'https://i.pinimg.com/564x/fc/2a/0d/fc2a0da0a5790107aca212d9970f9af5.jpg',
-        location: '종로구',
-        tags: [
-          '종로',
-          '종각',
-          '종조로종종',
-          '로컬맛집',
-          '오이시이',
-        ],
-      },
-      // {
-      //   post: '게시글 4',
-      //   placeImage:
-      //     'https://i.pinimg.com/236x/18/b3/3b/18b33b396ba808ef7efeb3a2f195d960.jpg',
-      //   location: '양주시',
-      //   tags: [
-      //     '가성비',
-      //     '막걸리',
-      //     '튀김',
-      //     '김밥',
-      //     '가까움',
-      //     '친절함',
-      //     '학교앞',
-      //   ],
-      // },
-    ]);
+  data() {
     return {
-      locationInfos,
-    };
+      user_id: '',
+      places: ref<Place[]>([])
+    }
   },
+  async mounted() {
+    this.user_id = String(this.$q.cookies.get('user_id'))
+    const res = await axios.post('https://gqdfxlv6p3.execute-api.us-east-2.amazonaws.com/default/2023-h-capstone-article-theme', {
+      user_id: this.user_id
+    })
+    this.places = res.data
+  }
 });
 </script>

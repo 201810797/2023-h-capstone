@@ -73,7 +73,6 @@ export default defineComponent({
   },
   async mounted() {
     this.user_id = String(this.$q.cookies.get('user_id'))
-    console.log(this.user_id)
     const res = await axios.post('https://gqdfxlv6p3.execute-api.us-east-2.amazonaws.com/default/2023-h-capstone-article-theme', {
       user_id: this.user_id
     })
