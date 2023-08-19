@@ -1,6 +1,6 @@
 <template>
   <div style="padding-top: 4rem; padding-bottom: 3rem; padding-left: 1rem; padding-right: 1rem">
-    <add-theme-modal />
+    <add-theme-modal @add-theme="handleEvent"/>
     <q-card
       class="my-card"
       flat
@@ -11,11 +11,11 @@
       <q-separator />
       <q-item clickable style="padding: 0 !important" to="article/write">
         <q-card-section horizontal>
-<!--          <q-img-->
-<!--            style="width: 20%"-->
-<!--            class="col-5"-->
-<!--            :src="friendInfo.placeImage"-->
-<!--          />-->
+          <q-img
+            style="width: 20%"
+            class="col-5"
+            :src="friendInfo.placeImage"
+          />
           <q-card-section style="padding: 0">
             <q-card-section>
               {{ friendInfo.user_id }}
@@ -79,6 +79,11 @@ export default defineComponent({
       user_id: this.user_id
     })
     this.places = res.data
+  },
+  methods: {
+    handleEvent: function (eventData: Place) {
+      this.places.push(eventData)
+    }
   }
 });
 </script>

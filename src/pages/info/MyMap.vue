@@ -1,37 +1,6 @@
 <template>
   <q-layout id="map" :style="mapStyle"></q-layout>
-  <q-dialog v-model="seamless" seamless position="bottom">
-    <q-card style="width: 350px">
-      <q-list bordered separator>
-        <q-item clickable v-ripple><q-item-section>{{this.x}}</q-item-section></q-item>
-        <q-item clickable v-ripple><q-item-section>{{this.y}}</q-item-section></q-item>
-        <q-item clickable v-ripple><q-item-section>{{this.category_name}}</q-item-section></q-item>
-        <q-item clickable v-ripple><q-item-section>{{this.place_name}}</q-item-section></q-item>
-        <q-item clickable v-ripple><q-item-section>{{this.road_address_name}}</q-item-section></q-item>
-      </q-list>
-      <q-card-section class="row items-center no-wrap">
-        <div>
-          <div class="text-weight-bold">장소를 추가하려면 버튼을 눌러주세요</div>
-          <div class="text-grey">!</div>
-        </div>
-
-        <q-space />
-
-        <q-btn color="black" label="추가" @click="addPlace" />
-      </q-card-section>
-    </q-card>
-  </q-dialog>
   <q-footer reveal elevated class="bg-black justify-end">
-    <h5 style="margin: 1.5%">{{ myPlaces.title }}</h5>
-    <q-input standout bottom-slots v-model="tag" label="Label" counter maxlength="12" :dense="false" bg-color="grey">
-      <template v-slot:hint>
-        Field hint
-      </template>
-      <template v-slot:after>
-        <q-btn round dense flat icon="send" color="black"/>
-      </template>
-      <q-btn color="white" text-color="black" label="찾기" @click="searchPlaces"/>
-    </q-input>
     <q-toolbar class="justify-between">
       <q-list style="width: 100%" class="flex row justify-start">
         <q-item v-for="(item, key) in placeCategory" v-bind:key="key" clickable>
@@ -241,7 +210,7 @@ export default defineComponent({
           this.category_name = place.category_name
           this.place_name = place.place_name
           this.road_address_name = place.road_address_name
-                    // 마커를 클릭하면 장소명이 인포윈도우에 표출됩니다
+          // 마커를 클릭하면 장소명이 인포윈도우에 표출됩니다
           this.infowindow.setContent('');
           this.infowindow.open(this.map, marker);
         }
@@ -288,10 +257,11 @@ export default defineComponent({
         if (this.infowindow != null) {
           // 마커를 클릭하면 장소명이 인포윈도우에 표출됩니다
           this.infowindow.setContent(
-            `<div style="padding:5px;font-size:12px;margin: auto;">
+            `
+<div style="padding:5px;font-size:12px;margin: auto;">
                     <p>${place.place_name}</p>
+                    <p>${place.road_address_name}</p>
                     <p>${placeTheme}</p>
-                    <input type="button" value="추가"/>
                     </div>`
           );
           this.infowindow.open(this.map, marker);
@@ -350,3 +320,25 @@ export default defineComponent({
   },
 });
 </script>
+<style scoped>
+/* 스타일링 */
+.modal-container {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  align-items: center;
+  justify-content: center;
+}
+
+.modal-content {
+  background-color: white;
+  padding: 20px;
+  border-radius: 5px;
+  box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+</style>

@@ -58,7 +58,7 @@
       v-for="(locationInfo, index) in places"
       v-bind:key="index"
     >
-      <q-item clickable style="padding: 0 !important">
+      <q-item clickable style="padding: 0 !important" :to="locationInfo.path">
         <q-card-section horizontal>
           <q-img
             style="width: 20%"
@@ -96,14 +96,16 @@ interface Place {
   id: number,
   title: string,
   tags: string,
-  image: string
+  image: string,
+  paths: string
 }
 import { defineComponent, ref } from 'vue';
 export default defineComponent({
   data() {
     return {
       user_id: '',
-      places: ref<Place[]>([])
+      places: ref<Place[]>([]),
+      myPlace: ''
     }
   },
   async mounted() {
@@ -111,7 +113,10 @@ export default defineComponent({
     const res = await axios.post('https://gqdfxlv6p3.execute-api.us-east-2.amazonaws.com/default/2023-h-capstone-article-theme', {
       user_id: this.user_id
     })
-    this.places = res.data
-  }
+    this.places = res.data.map(ele => ({
+      ...ele,
+      path: `/info/mymap?id=${ele.id}`
+    }))
+  },
 });
 </script>

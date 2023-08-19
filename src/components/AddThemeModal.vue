@@ -64,6 +64,9 @@ export default defineComponent({
       check: ref(false),
     };
   },
+  mounted() {
+    //
+  },
   methods: {
     onSubmit: function () {
       this.dialog = !this.dialog
@@ -74,6 +77,10 @@ export default defineComponent({
       })
         .then(res => {
           console.log(res)
+          this.$emit('add-theme', {
+            title: this.title,
+            tags: this.tags
+          })
         })
         .catch(err => {
           console.log(err)

@@ -39,6 +39,10 @@ const routes: RouteRecordRaw[] = [
         component: () => import('pages/info/MyFavorite.vue'),
       },
       { path: 'theme', component: () => import('pages/info/MyTheme.vue') },
+      {
+        path: 'mymap',
+        component: () => import('pages/info/MyMap.vue'),
+      },
     ],
   },
   {

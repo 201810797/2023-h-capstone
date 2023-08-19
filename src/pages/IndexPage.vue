@@ -172,7 +172,10 @@ export default defineComponent({
           this.$q.cookies.set('user_id', res.data.id, this.cookieOptions);
           this.$q.cookies.set('user_name', res.data.nickname, this.cookieOptions);
           this.$q.cookies.set('user_picture', res.data.picture, this.cookieOptions);
-          this.$router.push('/main')
+          setTimeout(()=> {
+            this.$router.push('/main')
+          }, 500)
+
           break
         // 계정 정보 맞지 않은 경우 status 202
         case 202:

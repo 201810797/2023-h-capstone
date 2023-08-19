@@ -17,7 +17,7 @@
           </q-item-label>
         </q-item-section>
         <q-item-section side>
-          <q-radio v-model="shape" :val="key" />
+          <q-radio v-model="shape" :val="place.id" />
         </q-item-section>
       </q-item>
       <q-separator />
@@ -27,7 +27,7 @@
     <q-toolbar class="justify-between">
       <div class="flex items-center justify-end" style="width: 100%">
         <q-btn
-          to="/article/write"
+          :to="writePath"
           icon="keyboard_tab"
           color="white"
           text-color="black"
@@ -68,7 +68,8 @@ export default defineComponent({
       title: ref<string>(''),
       tag: ref<string>(''),
       tags: ref<string[]>([]),
-      user_id: ref<string>('')
+      user_id: ref<string>(''),
+      writePath: "/article/write"
     };
   },
   async mounted() {
@@ -78,8 +79,14 @@ export default defineComponent({
     })
 
     this.places = res.data
+    this.writePath = `/article/write?id=${this.shape}`
     this.$q.loading.show();
     this.$q.loading.hide();
+  },
+  watch: {
+    shape(newV, oldV) {
+      this.writePath = `/article/write?id=${newV}`
+    }
   },
   methods: {
     //
