@@ -12,6 +12,16 @@
           :dense="dense"
         />
       </div>
+      <div class="column justify-start">
+        <q-input
+          type="text"
+          required
+          outlined
+          v-model="nickname"
+          label="닉네임을 입력해주세요"
+          :dense="dense"
+        />
+      </div>
       <q-input
         outlined
         v-model="password_init"
@@ -78,6 +88,7 @@ export default defineComponent({
     return {
       // MARK: 이메일 주소(user_id)
       email: '',
+      nickname: '',
       // MARK: 인증 코드
       auth_code: '',
       auth_code_confirm: '',
@@ -189,19 +200,13 @@ export default defineComponent({
       if (this.password_flag) {
         this.signup_submit_modal = true;
 
-        console.log({
-          type: 'signup',
-          email : this.email,
-          password : this.password_init,
-          nickname : this.email
-        })
         setTimeout(async () => {
           try {
-            const response = await axios.post('https://iclveynbwf.execute-api.us-east-2.amazonaws.com/default/2023-c-capstone-signin', {
-              type: 'signup',
-              email: this.email,
-              password: this.password_init,
-              nickname: this.email
+            const response = await axios.post('https://beyhjxqxv3.execute-api.us-east-2.amazonaws.com/default/2023-c-capstone-DAO', {
+              DML: 'INSERT',
+              table: 'user',
+              columns: 'email, password, nickname, is_verified',
+              values: `'${this.email}', '${this.password_init}', '${this.nickname}', 1`,
             });
 
             // 요청 성공 후 처리할 코드 작성

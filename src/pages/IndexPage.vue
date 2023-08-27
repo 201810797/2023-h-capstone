@@ -160,29 +160,24 @@ export default defineComponent({
     /** MARK: 회원가입
      * */
     onSubmit: async function () {
-      /** 로그인 api 추가 **/
-      const res = await axios.post('https://h8viqjk6ob.execute-api.us-east-2.amazonaws.com/default/2023-c-capstone-login', {
-        id: this.id,
-        password: this.password
-      })
-      const statusCode = res.status
-      switch (statusCode) {
-        // 계정 정보 존재하는 경우 status 201
-        case 201:
-          this.$q.cookies.set('user_id', res.data.id, this.cookieOptions);
-          this.$q.cookies.set('user_name', res.data.nickname, this.cookieOptions);
-          this.$q.cookies.set('user_picture', res.data.picture, this.cookieOptions);
-          setTimeout(()=> {
-            this.$router.push('/main')
-          }, 500)
-
-          break
-        // 계정 정보 맞지 않은 경우 status 202
-        case 202:
-          alert('아이디 혹은 패스워드 오류')
-          break
-        default:
-          break
+      const res = await axios
+        .post(
+          "https://beyhjxqxv3.execute-api.us-east-2.amazonaws.com/default/2023-c-capstone-DAO",
+          {
+            DML: "SELECT",
+            columns: "*",
+            table: "user",
+            where: `email = '${this.id}' and password = '${this.password}'`,
+          },
+        )
+      if(res.data.length > 0) {
+        this.$q.cookies.set('user_id', res.data[0].email, this.cookieOptions);
+        this.$q.cookies.set('user_name', res.data[0].nickname, this.cookieOptions);
+        this.$q.cookies.set('user_picture', res.data[0].picture, this.cookieOptions);
+        this.$router.push('/main')
+      }
+      else {
+        alert('아이디 혹은 패스워드가 일치하지 않습니다')
       }
     },
     setSessionKey: async function (user_key: string) {
