@@ -204,9 +204,9 @@ export default defineComponent({
           try {
             const response = await axios.post('https://beyhjxqxv3.execute-api.us-east-2.amazonaws.com/default/2023-c-capstone-DAO', {
               DML: 'INSERT',
-              table: 'user',
-              columns: 'email, password, nickname, is_verified',
-              values: `'${this.email}', '${this.password_init}', '${this.nickname}', 1`,
+              table: 'smususer',
+              columns: 'auth_id, password, nickname',
+              values: `'${this.email}', '${this.password_init}', '${this.nickname}'`,
             });
 
             // 요청 성공 후 처리할 코드 작성

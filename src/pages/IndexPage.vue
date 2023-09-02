@@ -166,19 +166,21 @@ export default defineComponent({
           {
             DML: "SELECT",
             columns: "*",
-            table: "user",
-            where: `email = '${this.id}' and password = '${this.password}'`,
+            table: "smususer",
+            where: `auth_id = '${this.id}' and password = '${this.password}'`,
           },
         )
-      if(res.data.length > 0) {
-        this.$q.cookies.set('user_id', res.data[0].email, this.cookieOptions);
-        this.$q.cookies.set('user_name', res.data[0].nickname, this.cookieOptions);
-        this.$q.cookies.set('user_picture', res.data[0].picture, this.cookieOptions);
+      if(res.data[0] !== undefined) {
+        console.log('success')
+        this.$q.cookies.set('user_id', res.data[0].auth_id, this.cookieOptions);
+        this.$q.cookies.set('nickname', res.data[0].nickname, this.cookieOptions);
+        this.$q.cookies.set('image', res.data[0].image, this.cookieOptions);
         this.$router.push('/main')
       }
       else {
         alert('아이디 혹은 패스워드가 일치하지 않습니다')
       }
+
     },
     setSessionKey: async function (user_key: string) {
       const key = JSON.stringify(crypto.randomUUID())

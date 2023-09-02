@@ -48,21 +48,36 @@
   </q-footer>
 
   <q-drawer v-model="drawer" show-if-above :width="200" :breakpoint="800">
-
-    <q-dialog v-model="this.dialog" :position="this.position">
-      <q-card style="width: 350px" class="flex column content-center">
-        <q-card-section class="row items-center no-wrap">
-          <div>
-            <q-input outlined label="id입력" />
-            <q-btn
-              style="width: 100%"
-              color="white"
-              text-color="black"
-              label="요청"
-            />
-          </div>
-          <q-space />
+    <q-dialog v-if="drawer && seamless" v-model="seamless" seamless position="top">
+      <q-card style="width: 350px">
+        <q-linear-progress :value="0.6" color="pink" />
+        <q-card-section>
+          <q-input v-model="search" filled type="search" hint="Search">
+            <template v-slot:append>
+              <q-icon name="search" @click="onSearch"/>
+            </template>
+          </q-input>
         </q-card-section>
+        <q-list bordered>
+          <q-separator />
+          <q-item-label header>Offline</q-item-label>
+          <q-item class="q-mb-sm" clickable v-ripple v-for="(ele, index) in searchResult" v-bind:key="index">
+            <q-item-section avatar>
+              <q-avatar>
+                <img :src="ele.image">
+              </q-avatar>
+            </q-item-section>
+
+            <q-item-section>
+              <q-item-label>{{ ele.nickname }}</q-item-label>
+              <q-item-label caption lines="1">{{ ele.auth_id }}</q-item-label>
+            </q-item-section>
+
+            <q-item-section side>
+              <q-icon name="chat_bubble" color="grey" />
+            </q-item-section>
+          </q-item>
+        </q-list>
       </q-card>
     </q-dialog>
 
@@ -120,9 +135,9 @@
           </q-item-section>
           <q-item-section> 해시태그 필터 </q-item-section>
         </q-item>
-        <q-item clickable v-ripple @click="open('top')">
+        <q-item clickable v-ripple @click="seamless = !seamless">
           <q-item-section avatar>
-            <q-icon name="add" />
+            <q-icon name="add"/>
           </q-item-section>
           <q-item-section> 친구 추가 </q-item-section>
         </q-item>
@@ -146,52 +161,69 @@
 
     </q-scroll-area>
 
-    <q-img
-      class="absolute-top"
-      src="https://i.pinimg.com/564x/2d/de/41/2dde4170e8b2b36265057013ebe7cfd2.jpg"
-      style="height: 150px"
-    >
-      <div class="absolute-bottom bg-transparent">
-        <div class="text-weight-bold text-black">수뭉이네 밥집</div>
+    <q-img class="absolute-top" src="https://cdn.quasar.dev/img/material.png" style="height: 150px">
+      <div class="absolute-bottom bg-transparent" v-if="this.$q">
+        <q-avatar size="56px" class="q-mb-sm">
+          <img :src="this.$q.cookies === undefined ? '' : this.$q.cookies.get('image')">
+        </q-avatar>
+        <div class="text-weight-bold">{{this.$q.cookies === undefined ? '' : this.$q.cookies.get('nickname')}}</div>
+        <div>{{this.$q.cookies === undefined ? '' : this.$q.cookies.get('user_id')}}</div>
       </div>
     </q-img>
   </q-drawer>
 </template>
 
-<script setup lang="ts">
-import { defineComponent, ref } from 'vue';
-import { useQuasar } from 'quasar';
-const $q = useQuasar()
-const dialog = ref(false);
-const regionFilterDialog = ref(false);
-const hashtagFilterDialog = ref(false);
-const position = ref('top');
+<script setup>
+import {ref, watch} from 'vue';
+import axios from 'axios';
+const seamless = ref(false)
 const drawer =  ref(false);
 const tab = ref('home');
-const open = (pos: string, filter?: string) => {
-  position.value = pos;
-  if (filter === 'region') {
-    regionFilterDialog.value = true;
-  } else if (filter === 'hashtag') {
-    hashtagFilterDialog.value = true;
-  } else {
-    dialog.value = true;
+const search = ref('')
+const searchResult = ref([])
+const onSearch = async () => {
+  try {
+    const response = await axios
+      .post(
+        "https://beyhjxqxv3.execute-api.us-east-2.amazonaws.com/default/2023-c-capstone-DAO",
+        {
+          DML: "SELECT",
+          columns: "*",
+          table: "smususer",
+          where: `auth_id like '%${search.value}%' or nickname like '%${search.value}%'`,
+        },
+      )
+    console.log(response.data)
+    searchResult.value = response.data
+  }
+  catch (e) {
+    console.log('search error', e)
   }
 }
+watch([drawer, searchResult], ([newDrawerValue, newSearchResultValue], [oldDrawerValue, OldSearchResultValue]) => {
+  if(!newDrawerValue) {
+    seamless.value = !(seamless.value)
+  }
+  console.log(searchResult)
+}, {deep: true})
 </script>
-<script lang="ts">
+<script>
 import {defineComponent} from 'vue';
-import {useQuasar} from 'quasar';
 
 export default defineComponent({
   name: 'MainDrawer',
+  created() {
+    if(this.$q.cookies.get('user_id') === undefined) {
+      this.$router.push('/')
+    }
+  },
   methods: {
     logout: function () {
       this.$q.cookies.remove('user_id');
       this.$q.cookies.remove('user_name');
       this.$q.cookies.remove('user_picture');
       this.$router.push('/')
-    }
+    },
   }
 });
 </script>
