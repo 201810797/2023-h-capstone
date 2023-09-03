@@ -27,7 +27,7 @@ const routes: RouteRecordRaw[] = [
     children: [
       { path: 'my', component: () => import('pages/info/MyInfoPage.vue') },
       {
-        path: 'friend',
+        path: 'friend/:id',
         component: () => import('pages/info/FriendInfoPage.vue'),
       },
       {

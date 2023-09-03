@@ -50,7 +50,7 @@
   <q-drawer v-model="drawer" show-if-above :width="200" :breakpoint="800">
     <q-dialog v-if="drawer && seamless" v-model="seamless" seamless position="top">
       <q-card style="width: 350px">
-        <q-linear-progress :value="0.6" color="pink" />
+        <q-linear-progress :value="1.0" color="pink" />
         <q-card-section>
           <q-input v-model="search" filled type="search" hint="Search">
             <template v-slot:append>
@@ -58,10 +58,9 @@
             </template>
           </q-input>
         </q-card-section>
-        <q-list bordered>
+        <q-list bordered >
           <q-separator />
-          <q-item-label header>Offline</q-item-label>
-          <q-item class="q-mb-sm" clickable v-ripple v-for="(ele, index) in searchResult" v-bind:key="index">
+          <q-item class="q-mb-sm" v-ripple v-for="(ele, index) in searchResult" v-bind:key="index">
             <q-item-section avatar>
               <q-avatar>
                 <img :src="ele.image">
@@ -74,7 +73,9 @@
             </q-item-section>
 
             <q-item-section side>
-              <q-icon name="chat_bubble" color="grey" />
+              <q-btn @click="addFriend(ele.auth_id)">
+                <q-icon name="person_add" color="grey" />
+              </q-btn>
             </q-item-section>
           </q-item>
         </q-list>
@@ -176,11 +177,13 @@
 <script setup>
 import {ref, watch} from 'vue';
 import axios from 'axios';
+import {useQuasar} from 'quasar';
 const seamless = ref(false)
 const drawer =  ref(false);
 const tab = ref('home');
 const search = ref('')
 const searchResult = ref([])
+const $q = useQuasar()
 const onSearch = async () => {
   try {
     const response = await axios
@@ -190,19 +193,44 @@ const onSearch = async () => {
           DML: "SELECT",
           columns: "*",
           table: "smususer",
-          where: `auth_id like '%${search.value}%' or nickname like '%${search.value}%'`,
+          where: `(auth_id like '%${search.value}%' or nickname like '%${search.value}%') and auth_id != '${$q.cookies.get('user_id')}'`,
         },
       )
-    console.log(response.data)
     searchResult.value = response.data
   }
   catch (e) {
     console.log('search error', e)
   }
 }
+const addFriend = async (auth_id) => {
+  try {
+    await axios.post(
+      "https://beyhjxqxv3.execute-api.us-east-2.amazonaws.com/default/2023-c-capstone-DAO",
+      {
+        DML: "INSERT",
+        table: "smusfollow",
+        columns: "from_id, to_id",
+        values: `'${$q.cookies.get('user_id')}', '${auth_id}'`,
+      },
+    );
+    await axios.post(
+      "https://beyhjxqxv3.execute-api.us-east-2.amazonaws.com/default/2023-c-capstone-DAO",
+      {
+        DML: "INSERT",
+        table: "smusfollow",
+        columns: "from_id, to_id",
+        values: `'${auth_id}', '${$q.cookies.get('user_id')}'`,
+      },
+    );
+  }
+  catch (e) {
+    console.log("addFriend error", e)
+  }
+  window.location.reload()
+}
 watch([drawer, searchResult], ([newDrawerValue, newSearchResultValue], [oldDrawerValue, OldSearchResultValue]) => {
   if(!newDrawerValue) {
-    seamless.value = !(seamless.value)
+    seamless.value = false
   }
   console.log(searchResult)
 }, {deep: true})

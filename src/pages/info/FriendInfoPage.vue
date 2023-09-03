@@ -16,7 +16,7 @@
             <span>
               <h6 style="margin: 0; padding: 0">고양고양이</h6>
             </span>
-            <q-btn color="white" text-color="black" label="친구 수 10" />
+            <q-btn color="white" text-color="black" :label="this.friendInfo !== undefined ? this.friendInfo.length : '0'" />
           </q-item-label>
           <q-item-label caption style="margin: 5px"> 친구 </q-item-label>
         </q-item-section>
@@ -74,6 +74,8 @@
 </template>
 
 <script lang="ts">
+import axios from 'axios';
+
 interface LocationInfo {
   placeImage: string;
   post: string;
@@ -152,6 +154,45 @@ export default defineComponent({
     return {
       locationInfos,
     };
+  },
+  data() {
+    return {
+      friendInfo: ref([]),
+      seamless: false,
+      info: ref({})
+    }
+  },
+  async mounted() {
+    // 현재 경로를 가져옵니다.
+    const currentPath = this.$router.currentRoute.value.fullPath;
+
+// 경로를 '/' 문자로 분리하여 배열로 만듭니다.
+    const pathSegments = currentPath.split('/');
+
+// 배열에서 'c'를 추출합니다. 'c'는 배열의 마지막 요소입니다.
+    const friendId = pathSegments[pathSegments.length - 1];
+
+    console.log(friendId);
+    this.info = (await axios.post(
+      "https://beyhjxqxv3.execute-api.us-east-2.amazonaws.com/default/2023-c-capstone-DAO",
+      {
+        DML: "SELECT",
+        columns: "*",
+        table: "smususer",
+        where: `auth_id = '${friendId}'`,
+      },
+    )).data
+    this.friendInfo = (await axios.post(
+      "https://beyhjxqxv3.execute-api.us-east-2.amazonaws.com/default/2023-c-capstone-DAO",
+      {
+        DML: "SELECT",
+        columns: "*",
+        table: "smusfollow, smususer",
+        where: `smusfollow.from_id = '${friendId}' and smusfollow.to_id=auth_id`,
+      },
+    )).data
+    console.log(this.info)
+    console.log(this.friendId)
   },
 });
 </script>

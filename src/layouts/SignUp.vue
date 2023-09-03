@@ -5,6 +5,7 @@
       container
       style="height: 100vh"
       class="shadow-2 rounded-borders"
+      v-if="this"
     >
       <q-header bordered class="bg-white text-primary">
         <q-toolbar>
