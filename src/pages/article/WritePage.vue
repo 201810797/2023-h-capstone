@@ -1,5 +1,17 @@
 <template>
   <q-layout id="map" :style="mapStyle"></q-layout>
+  <q-dialog v-model="seamlessTop" seamless position="top" style="max-height: 30vh; overflow-y: auto;">
+    <q-card style="width: 350px">
+      <q-list bordered separator>
+        <q-item v-for="(item, index) in myPlacesInfo" v-bind:key="index" clickable v-ripple>
+          <q-item-section>
+            <q-item-label>{{item.place_name}}</q-item-label>
+            <q-item-label caption>{{item.road_address_name}}</q-item-label>
+          </q-item-section>
+        </q-item>
+      </q-list>
+    </q-card>
+  </q-dialog>
   <q-dialog v-model="seamless" seamless position="bottom">
     <q-card style="width: 350px">
       <q-list bordered separator>
@@ -73,7 +85,8 @@ export default defineComponent({
   components: {},
   setup() {
     return {
-      seamless: ref(false)
+      seamless: ref(false),
+      seamlessTop: ref(true)
     };
   },
   data() {
@@ -105,56 +118,56 @@ export default defineComponent({
       category_name: '',
       place_name: '',
       road_address_name: '',
+      myPlacesInfo: []
     };
   },
-  mounted() {
-    axios.post('https://beyhjxqxv3.execute-api.us-east-2.amazonaws.com/default/2023-c-capstone-DAO', {
+  async mounted() {
+    let res = await axios.post('https://beyhjxqxv3.execute-api.us-east-2.amazonaws.com/default/2023-c-capstone-DAO', {
       DML: 'SELECT',
       columns: '*',
       table: 'smuslocation',
       where: `post_id=${this.$route.query.id}`
     })
-      .then(res => {
-        this.placesInfos = res.data
-        axios.post('https://beyhjxqxv3.execute-api.us-east-2.amazonaws.com/default/2023-c-capstone-DAO', {
-          DML: 'SELECT',
-          columns: '*',
-          table: 'smuspost',
-          where: `id=${this.$route.query.id}`
-        })
-          .then(res => {
-            this.myPlaces = res.data
-            this.placeCategory = this.myPlaces.tags;
-            this.$q.loading.show();
-            setTimeout(() => {
-              if (!window.kakao || !window.kakao.maps) {
-                // script 태그 객체 생성
-                const script = document.createElement('script');
-                // src 속성을 추가하며 .env.local에 등록한 service 키 활용
-                // 동적 로딩을 위해서 autoload=false 추가
-                script.src =
-                  '//dapi.kakao.com/v2/maps/sdk.js?autoload=false&appkey=' +
-                  `${process.env.KAKAOMAP_KEY}` +
-                  '&libraries=services,clusterer,drawing';
-                /* global kakao */
-                document.head.appendChild(script);
-                script.addEventListener('load', () => {
-                  kakao.maps.load(this.initMap);
-                });
-              } else {
-                this.initMap();
-              }
-              this.showPlace(0);
-              this.$q.loading.hide();
-            }, 1000);
-          })
-          .catch(err => {
-            console.log(err)
-          })
-      })
-      .catch(err => {
-        console.log(err)
-      })
+    this.placesInfos = res.data
+    res = await axios.post('https://beyhjxqxv3.execute-api.us-east-2.amazonaws.com/default/2023-c-capstone-DAO', {
+      DML: 'SELECT',
+      columns: '*',
+      table: 'smuspost',
+      where: `id=${this.$route.query.id}`
+    })
+    this.myPlaces = res.data
+    this.placeCategory = this.myPlaces.tags;
+    this.$q.loading.show();
+    res = await axios.post('https://beyhjxqxv3.execute-api.us-east-2.amazonaws.com/default/2023-c-capstone-DAO', {
+      DML: 'SELECT',
+      columns: '*',
+      table: 'smuslocation',
+      where: `post_id=${this.$route.query.id}`
+    })
+    this.myPlacesInfo = res.data
+    console.log(this.myPlacesInfo)
+    setTimeout(() => {
+        if (!window.kakao || !window.kakao.maps) {
+          // script 태그 객체 생성
+          const script = document.createElement('script');
+          // src 속성을 추가하며 .env.local에 등록한 service 키 활용
+          // 동적 로딩을 위해서 autoload=false 추가
+          script.src =
+            '//dapi.kakao.com/v2/maps/sdk.js?autoload=false&appkey=' +
+            `${process.env.KAKAOMAP_KEY}` +
+            '&libraries=services,clusterer,drawing';
+          /* global kakao */
+          document.head.appendChild(script);
+          script.addEventListener('load', () => {
+            kakao.maps.load(this.initMap);
+          });
+        } else {
+          this.initMap();
+        }
+        this.showPlace(0);
+        this.$q.loading.hide();
+      }
+    )
   },
   methods: {
     initMap: function () {
@@ -169,20 +182,16 @@ export default defineComponent({
         this.ps = new kakao.maps.services.Places();
       }, 100);
     },
-    addPlace: function () {
+    addPlace: async function () {
       this.seamless = false
-      axios.post('https://beyhjxqxv3.execute-api.us-east-2.amazonaws.com/default/2023-c-capstone-DAO', {
+      console.log(this)
+      this.myPlacesInfo.push(this)
+      await axios.post('https://beyhjxqxv3.execute-api.us-east-2.amazonaws.com/default/2023-c-capstone-DAO', {
         DML: 'INSERT',
         table: 'smuslocation',
         columns: 'post_id,x,y,category_name,place_name,road_address_name',
         values: `${this.$route.query.id}, '${this.x}', '${this.y}', '${this.category_name}', '${this.place_name}', '${this.road_address_name}'`
       })
-        .then(res => {
-          console.log(res)
-        })
-        .catch(err => {
-          console.log(err)
-        })
     },
     placesSearchCB: function (
       data: string | any[],

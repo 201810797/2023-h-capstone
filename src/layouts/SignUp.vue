@@ -1,5 +1,5 @@
 <template>
-  <div class="q-pa-md" view="hHh lpR fFf">
+  <div class="q-pa-md" view="hHh lpR fFf" v-if="this.$q">
     <q-layout
       view="lHh lpr lFf"
       container

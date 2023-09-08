@@ -247,9 +247,10 @@ export default defineComponent({
   },
   methods: {
     logout: function () {
+      this.$q.cookies.remove('_key');
       this.$q.cookies.remove('user_id');
-      this.$q.cookies.remove('user_name');
-      this.$q.cookies.remove('user_picture');
+      this.$q.cookies.remove('nickname');
+      this.$q.cookies.remove('image');
       this.$router.push('/')
     },
   }

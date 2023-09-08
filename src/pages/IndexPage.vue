@@ -172,6 +172,7 @@ export default defineComponent({
         )
       if(res.data[0] !== undefined) {
         console.log('success')
+        this.$q.cookies.set('_key', res.data[0].id, this.cookieOptions);
         this.$q.cookies.set('user_id', res.data[0].auth_id, this.cookieOptions);
         this.$q.cookies.set('nickname', res.data[0].nickname, this.cookieOptions);
         this.$q.cookies.set('image', res.data[0].image, this.cookieOptions);

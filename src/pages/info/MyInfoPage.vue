@@ -1,5 +1,5 @@
 <template>
-  <div style="padding-top: 4rem; padding-bottom: 3rem; padding-left: 1rem; padding-right: 1rem">
+  <div v-if="this.$q" style="padding-top: 4rem; padding-bottom: 3rem; padding-left: 1rem; padding-right: 1rem">
     <q-dialog v-model="seamless" seamless position="bottom">
       <q-card style="width: 350px">
         <q-card-section class="row items-center no-wrap">

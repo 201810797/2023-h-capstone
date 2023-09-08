@@ -1,5 +1,40 @@
 <template>
+  <q-dialog v-model="commentModal">
+    <q-card style="min-width: 350px">
+      <q-card-section>
+        <div class="text-h6">댓글</div>
+      </q-card-section>
+      <div v-if="comments.length !== 0" >
+        <q-item v-for="(comment, index) in comments" :key="index" class="q-mb-sm" clickable v-ripple>
+          <q-item-section avatar>
+            <q-avatar>
+              <img :src="comment.image !== undefined ? comment.image : ''">
+            </q-avatar>
+          </q-item-section>
+
+          <q-item-section>
+            <q-item-label>{{ comment.comment }}</q-item-label>
+            <q-item-label caption lines="1">{{ comment.nickname }}</q-item-label>
+          </q-item-section>
+
+          <q-item-section side>
+            <q-icon name="chat_bubble" color="grey" />
+          </q-item-section>
+        </q-item>
+      </div>
+
+      <q-card-section class="q-pt-none">
+        <q-input dense v-model="commentText" autofocus @keyup.enter="addComment" />
+      </q-card-section>
+
+      <q-card-actions align="right" class="text-primary">
+        <q-btn flat label="취소" v-close-popup />
+        <q-btn flat label="댓글 추가" @click="addComment" />
+      </q-card-actions>
+    </q-card>
+  </q-dialog>
   <q-layout id="map" :style="mapStyle"></q-layout>
+
   <q-footer reveal elevated class="bg-black justify-end">
     <q-toolbar class="justify-between">
       <q-list style="width: 100%" class="flex row justify-start">
@@ -9,6 +44,7 @@
           </q-item-section>
         </q-item>
       </q-list>
+      <q-btn color="white" text-color="black" label="댓글 보기" @click="showComment"/>
       <q-btn
         to="/main"
         style="width: 10%"
@@ -42,7 +78,8 @@ export default defineComponent({
   components: {},
   setup() {
     return {
-      seamless: ref(false)
+      seamless: ref(false),
+      commentModal: ref(false)
     };
   },
   data() {
@@ -74,56 +111,59 @@ export default defineComponent({
       category_name: '',
       place_name: '',
       road_address_name: '',
+      commentText: '',
+      comments: []
     };
   },
-  mounted() {
-    axios.post('https://beyhjxqxv3.execute-api.us-east-2.amazonaws.com/default/2023-c-capstone-DAO', {
+  async mounted() {
+    let res = await axios.post('https://beyhjxqxv3.execute-api.us-east-2.amazonaws.com/default/2023-c-capstone-DAO', {
       DML: 'SELECT',
       columns: '*',
       table: 'smuslocation',
       where: `post_id=${this.$route.query.id}`
     })
-      .then(res => {
-        this.placesInfos = res.data
-        axios.post('https://beyhjxqxv3.execute-api.us-east-2.amazonaws.com/default/2023-c-capstone-DAO', {
-          DML: 'SELECT',
-          columns: '*',
-          table: 'smuspost',
-          where: `id=${this.$route.query.id}`
-        })
-          .then(res => {
-            this.myPlaces = res.data
-            this.placeCategory = this.myPlaces.tags;
-            this.$q.loading.show();
-            setTimeout(() => {
-              if (!window.kakao || !window.kakao.maps) {
-                // script 태그 객체 생성
-                const script = document.createElement('script');
-                // src 속성을 추가하며 .env.local에 등록한 service 키 활용
-                // 동적 로딩을 위해서 autoload=false 추가
-                script.src =
-                  '//dapi.kakao.com/v2/maps/sdk.js?autoload=false&appkey=' +
-                  `${process.env.KAKAOMAP_KEY}` +
-                  '&libraries=services,clusterer,drawing';
-                /* global kakao */
-                document.head.appendChild(script);
-                script.addEventListener('load', () => {
-                  kakao.maps.load(this.initMap);
-                });
-              } else {
-                this.initMap();
-              }
-              this.showPlace(0);
-              this.$q.loading.hide();
-            }, 1000);
-          })
-          .catch(err => {
-            console.log(err)
-          })
-      })
-      .catch(err => {
-        console.log(err)
-      })
+    this.placesInfos = res.data
+    res = await axios.post('https://beyhjxqxv3.execute-api.us-east-2.amazonaws.com/default/2023-c-capstone-DAO', {
+      DML: 'SELECT',
+      columns: '*',
+      table: 'smuspost',
+      where: `id=${this.$route.query.id}`
+    })
+    this.myPlaces = res.data
+    this.placeCategory = this.myPlaces.tags;
+    res = await axios.post('https://beyhjxqxv3.execute-api.us-east-2.amazonaws.com/default/2023-c-capstone-DAO', {
+      DML: 'SELECT',
+      columns: '*',
+      table: 'smuscomment',
+      where: `post_id=${this.$route.query.id}`
+    })
+    this.comments = res.data.map(({ comment, from_image: image, from_nickname: nickname }) => ({
+      comment,
+      image,
+      nickname
+    }))
+    this.$q.loading.show();
+    setTimeout(() => {
+      if (!window.kakao || !window.kakao.maps) {
+        // script 태그 객체 생성
+        const script = document.createElement('script');
+        // src 속성을 추가하며 .env.local에 등록한 service 키 활용
+        // 동적 로딩을 위해서 autoload=false 추가
+        script.src =
+          '//dapi.kakao.com/v2/maps/sdk.js?autoload=false&appkey=' +
+          `${process.env.KAKAOMAP_KEY}` +
+          '&libraries=services,clusterer,drawing';
+        /* global kakao */
+        document.head.appendChild(script);
+        script.addEventListener('load', () => {
+          kakao.maps.load(this.initMap);
+        });
+      } else {
+        this.initMap();
+      }
+      this.showPlace(0);
+      this.$q.loading.hide();
+    }, 1000);
   },
   methods: {
     initMap: function () {
@@ -138,20 +178,14 @@ export default defineComponent({
         this.ps = new kakao.maps.services.Places();
       }, 100);
     },
-    addPlace: function () {
+    addPlace: async function () {
       this.seamless = false
-      axios.post('https://beyhjxqxv3.execute-api.us-east-2.amazonaws.com/default/2023-c-capstone-DAO', {
+      await axios.post('https://beyhjxqxv3.execute-api.us-east-2.amazonaws.com/default/2023-c-capstone-DAO', {
         DML: 'INSERT',
         table: 'smuslocation',
         columns: 'post_id,x,y,category_name,place_name,road_address_name',
         values: `${this.$route.query.id}, '${this.x}', '${this.y}', '${this.category_name}', '${this.place_name}', '${this.road_address_name}'`
       })
-        .then(res => {
-          console.log(res)
-        })
-        .catch(err => {
-          console.log(err)
-        })
     },
     placesSearchCB: function (
       data: string | any[],
@@ -317,6 +351,23 @@ export default defineComponent({
         }
       }, 200);
     },
+    showComment: async function() {
+      this.commentModal = true
+    },
+    addComment: async function() {
+      const res = await axios.post('https://beyhjxqxv3.execute-api.us-east-2.amazonaws.com/default/2023-c-capstone-DAO', {
+        DML: 'INSERT',
+        table: 'smuscomment',
+        columns: 'from_id,to_id,comment,post_id, from_nickname, from_image',
+        values: `'${this.$q.cookies.get('user_id')}', '${this.myPlaces[0].user_id}', '${this.commentText}', ${this.$route.query.id}, '${this.$q.cookies.get('nickname')}', '${this.$q.cookies.get('image')}'`
+      })
+      this.comments.push({
+        image: this.$q.cookies.get('image'),
+        comment: this.commentText,
+        nickname: this.$q.cookies.get('nickname')
+      })
+      this.commentText = ''
+    }
   },
 });
 </script>

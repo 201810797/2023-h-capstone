@@ -9,7 +9,7 @@
       v-bind:key="index"
     >
       <q-separator />
-      <q-item clickable style="padding: 0 !important" to="article/write">
+      <q-item clickable style="padding: 0 !important">
         <q-card-section horizontal>
           <q-img
             style="width: 20%"

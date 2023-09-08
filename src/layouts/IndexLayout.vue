@@ -1,5 +1,5 @@
 <template>
-  <q-layout view="lHh Lpr lFf" v-if="this">
+  <q-layout view="lHh Lpr lFf" v-if="this.$q">
     <router-view />
   </q-layout>
 </template>
