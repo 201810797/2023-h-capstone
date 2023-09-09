@@ -186,7 +186,7 @@ const searchResult = ref([])
 const $q = useQuasar()
 const onSearch = async () => {
   try {
-    const response = await axios
+    let a = (await axios
       .post(
         "https://beyhjxqxv3.execute-api.us-east-2.amazonaws.com/default/2023-c-capstone-DAO",
         {
@@ -195,8 +195,23 @@ const onSearch = async () => {
           table: "smususer",
           where: `(auth_id like '%${search.value}%' or nickname like '%${search.value}%') and auth_id != '${$q.cookies.get('user_id')}'`,
         },
-      )
-    searchResult.value = response.data
+      )).data
+    let b = (await axios
+      .post(
+        "https://beyhjxqxv3.execute-api.us-east-2.amazonaws.com/default/2023-c-capstone-DAO",
+        {
+          DML: "SELECT",
+          columns: "*",
+          table: "smusfollow",
+          where: `from_id='${$q.cookies.get('user_id')}'`,
+        },
+      )).data
+    searchResult.value = a.filter(function(itemA) {
+      return !b.some(function(itemB) {
+        return itemA.auth_id === itemB.to_id;
+      });
+    });
+    console.log(searchResult)
   }
   catch (e) {
     console.log('search error', e)

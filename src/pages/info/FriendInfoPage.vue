@@ -3,10 +3,10 @@
     <q-card class="my-card" flat bordered>
       <q-item>
         <q-item-section avatar>
-          <q-btn round to="/info/friend">
+          <q-btn round>
             <q-avatar>
               <img
-                src="https://i.pinimg.com/564x/f4/13/d0/f413d09e8b1b08b0138f63c033dd9237.jpg"
+                :src="this.info['image']"
               />
             </q-avatar>
           </q-btn>
@@ -14,9 +14,9 @@
         <q-item-section>
           <q-item-label class="flex row justify-between" style="margin: 5px">
             <span>
-              <h6 style="margin: 0; padding: 0">고양고양이</h6>
+              <h6 style="margin: 0; padding: 0">{{this.info['nickname']}}</h6>
             </span>
-            친구 <q-btn color="white" text-color="black" :label="this.friendInfo !== undefined ? this.friendInfo.length : '0'" />
+            친구 <q-btn color="white" @click="seamless = true" text-color="black" :label="this.friendInfo !== undefined ? this.friendInfo.length : '0'" />
           </q-item-label>
           <q-item-label caption style="margin: 5px">친구</q-item-label>
         </q-item-section>
@@ -36,19 +36,20 @@
       class="my-card"
       flat
       bordered
-      v-for="(locationInfo, index) in locationInfos"
+      v-for="(locationInfo, index) in places"
       v-bind:key="index"
+
     >
-      <q-item clickable style="padding: 0 !important">
+      <q-item clickable style="padding: 0 !important" :to="locationInfo.path">
         <q-card-section horizontal>
           <q-img
             style="width: 20%"
             class="col-5"
-            :src="locationInfo.placeImage"
+            :src="locationInfo.image"
           />
           <q-card-section style="padding: 0">
             <q-card-section>
-              {{ locationInfo.post }}
+              {{ locationInfo.title }}
             </q-card-section>
             <q-card-section style="padding-top: 0">
               <q-avatar
@@ -62,14 +63,36 @@
           </q-card-section>
           <q-separator vertical />
           <q-card-section class="col">
-            <span v-for="(tag, index) in locationInfo.tags" v-bind:key="index"
-              >#{{ tag }}</span
-            >
+            {{locationInfo.tags}}
           </q-card-section>
         </q-card-section>
       </q-item>
       <q-separator />
     </q-card>
+    <q-dialog v-model="seamless" seamless position="bottom">
+      <q-card style="width: 350px">
+        <q-card-section class="row items-center no-wrap">
+          {{'친구 목록'}}
+          <q-space />
+          <q-btn flat round icon="close" v-close-popup />
+        </q-card-section>
+        <q-list bordered >
+          <q-separator />
+          <q-item clickable class="q-mb-sm" v-ripple v-for="(ele, index) in friendInfo" v-bind:key="index" @click="toFriendInfo(ele.auth_id)">
+            <q-item-section avatar>
+              <q-avatar>
+                <img :src="ele.image">
+              </q-avatar>
+            </q-item-section>
+
+            <q-item-section>
+              <q-item-label>{{ ele.nickname }}</q-item-label>
+              <q-item-label caption lines="1">{{ ele.auth_id }}</q-item-label>
+            </q-item-section>
+          </q-item>
+        </q-list>
+      </q-card>
+    </q-dialog>
   </div>
 </template>
 
@@ -91,6 +114,7 @@ export default defineComponent({
   components: {},
   setup() {
     return {
+      //
     };
   },
   data() {
@@ -99,8 +123,8 @@ export default defineComponent({
       places: ref<Place[]>([]),
       myPlace: '',
       friendInfo: ref([]),
-      seamless: false,
-      info: ref({})
+      info: ref({}),
+      seamless: false
     }
   },
   async mounted() {
@@ -121,7 +145,7 @@ export default defineComponent({
         table: "smususer",
         where: `auth_id = '${friendId}'`,
       },
-    )).data
+    )).data[0]
 
     this.friendInfo = (await axios.post(
       "https://beyhjxqxv3.execute-api.us-east-2.amazonaws.com/default/2023-c-capstone-DAO",
@@ -132,6 +156,19 @@ export default defineComponent({
         where: `smusfollow.from_id = '${friendId}' and smusfollow.to_id=auth_id`,
       },
     )).data
+    const res = await axios.post('https://gqdfxlv6p3.execute-api.us-east-2.amazonaws.com/default/2023-h-capstone-article-theme', {
+      user_id: this.info['auth_id']
+    })
+    this.places = res.data.map(ele => ({
+      ...ele,
+      path: `/info/mymap?id=${ele.id}`
+    }))
+    console.log(this.places)
   },
+  methods: {
+    toFriendInfo: function (id) {
+      location.href = `/info/friend/${id}`
+    }
+  }
 });
 </script>
